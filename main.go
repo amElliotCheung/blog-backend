@@ -10,7 +10,7 @@ type app struct {
 func (a *app) run() {
 	router := gin.Default()
 	router.GET("/", a.getAllBlogs)
-	router.Run("localhost:8080")
+	router.Run(":80")
 }
 
 func main() {
