@@ -22,7 +22,7 @@ func (a *app) run() {
 		c.Next()
 	})
 	router.GET("/", a.getAllBlogs)
-	router.GET("/blog/:id", a.getBlog)
+	router.GET("/blogs/:id", a.getBlog)
 	router.Run(":8080")
 }
 
