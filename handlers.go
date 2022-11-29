@@ -37,28 +37,21 @@ var blogs = []Blog{
 }
 
 func (a *app) getAllBlogs(c *gin.Context) {
-	print("connected")
+	println("getAllBlogs")
 	c.JSON(http.StatusOK, gin.H{
 		"data": blogs,
 	})
 }
 
 func (a *app) getBlog(c *gin.Context) {
+
 	pid := c.Param("id")
 	id, _ := strconv.Atoi(pid)
 	blog := blogs[id]
+
+	println("getBlog", id)
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": blog,
-	})
-}
-
-func (a *app) getBlog(c *gin.Context) {
-	id := c.Param("id")
-
-	c.JSON(http.StatusOK, gin.H{
-		"id":           id,
-		"title":        "title" + string(id),
-		"release_date": "11-26",
-		"content":      "nothing",
 	})
 }
