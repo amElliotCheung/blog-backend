@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type app struct {
@@ -10,15 +13,15 @@ type app struct {
 }
 
 func main() {
-	// client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// if err = client.Ping(context.TODO(), nil); err != nil {
-	// 	panic(err)
-	// }
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		panic(err)
+	}
+	if err = client.Ping(context.TODO(), nil); err != nil {
+		panic(err)
+	}
 	a := &app{
-		// Blogs: client.Database("BLOG").Collection("blogs"),
+		Blogs: client.Database("BLOG").Collection("blogs"),
 	}
 	a.run()
 }
