@@ -60,13 +60,13 @@ func (a *app) GetBlog(c *gin.Context) {
 
 func (a *app) CreateBlog(c *gin.Context) {
 
-	blog := model.Blog{
-		Id:          primitive.NewObjectID(),
-		Title:       c.PostForm("title"),
-		Content:     c.PostForm("content"),
-		ReleaseDate: time.Now(),
-	}
+	var blog model.Blog
 
+	if err := c.ShouldBindJSON(&blog); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	blog.ReleaseDate = time.Now()
 	result, err := a.Blogs.InsertOne(context.TODO(), blog)
 
 	if err != nil {
