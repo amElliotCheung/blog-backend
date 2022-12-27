@@ -2,11 +2,28 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type app struct{}
+type app struct {
+	Blogs *mongo.Collection
+}
 
+func main() {
+	// client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if err = client.Ping(context.TODO(), nil); err != nil {
+	// 	panic(err)
+	// }
+	a := &app{
+		// Blogs: client.Database("BLOG").Collection("blogs"),
+	}
+	a.run()
+}
 func (a *app) run() {
+
 	router := gin.Default()
 	// https://stackoverflow.com/questions/55347167/gin-contrib-cors-returns-404
 	router.Use(func(c *gin.Context) {
@@ -21,12 +38,8 @@ func (a *app) run() {
 		}
 		c.Next()
 	})
-	router.GET("/", a.getAllBlogs)
-	router.GET("/blogs/:id", a.getBlog)
+	router.GET("/", a.GetAllBlogs)
+	router.GET("/blogs/:id", a.GetBlog)
+	router.POST("blogs/createBlog", a.CreateBlog)
 	router.Run(":8080")
-}
-
-func main() {
-	a := &app{}
-	a.run()
 }

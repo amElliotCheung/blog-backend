@@ -1,57 +1,79 @@
 package main
 
 import (
+	"blog/model"
+	"context"
+	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Blog struct {
-	Id          int       `json:"id"`
-	Title       string    `json:"title"`
-	Content     string    `json:"content"`
-	ReleaseDate time.Time `json:"release_date"`
+func (a *app) GetAllBlogs(c *gin.Context) {
+	var blog model.Blog
+	var blogs []model.Blog
+
+	cursor, err := a.Blogs.Find(context.TODO(), bson.D{})
+	if err != nil {
+		cursor.Close(context.TODO())
+		return
+	}
+
+	for cursor.Next(context.TODO()) {
+		if err = cursor.Decode(&blog); err != nil {
+			log.Println("decoding blog error")
+			return
+		}
+		blogs = append(blogs, blog)
+	}
+
+	log.Println("get all blogs")
+
+	c.JSON(http.StatusOK, blogs)
 }
 
-var blogs = []Blog{
-	{
-		Id:          1,
-		Title:       "one",
-		Content:     "#title\n- one\n- two\n",
-		ReleaseDate: time.Now(),
-	},
-	{
-		Id:          2,
-		Title:       "two",
-		Content:     "#title\n- one\n- two\n",
-		ReleaseDate: time.Now(),
-	},
-	{
-		Id:          3,
-		Title:       "three",
-		Content:     "#title\n- one\n- two\n",
-		ReleaseDate: time.Now(),
-	},
+func (a *app) GetBlog(c *gin.Context) {
+
+	blog := model.Blog{}
+
+	oID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Println("illegal parameter id")
+		return
+	}
+	result := a.Blogs.FindOne(context.TODO(),
+		bson.D{
+			{"_id", oID},
+		})
+	if err = result.Decode(&blog); err != nil {
+		log.Println("decoding error")
+		return
+	}
+
+	log.Println("get blog")
+
+	c.JSON(http.StatusOK, blog)
 }
 
-func (a *app) getAllBlogs(c *gin.Context) {
-	println("getAllBlogs")
-	c.JSON(http.StatusOK, gin.H{
-		"data": blogs,
-	})
-}
+func (a *app) CreateBlog(c *gin.Context) {
 
-func (a *app) getBlog(c *gin.Context) {
+	blog := model.Blog{
+		Id:          primitive.NewObjectID(),
+		Title:       c.PostForm("title"),
+		Content:     c.PostForm("content"),
+		ReleaseDate: time.Now(),
+	}
 
-	pid := c.Param("id")
-	id, _ := strconv.Atoi(pid)
-	blog := blogs[id]
+	result, err := a.Blogs.InsertOne(context.TODO(), blog)
 
-	println("getBlog", id)
+	if err != nil {
+		log.Println(err)
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": blog,
-	})
+	log.Printf("createBlog: %d newly created\n", result.InsertedID)
+
+	c.JSON(http.StatusOK, blog)
 }
