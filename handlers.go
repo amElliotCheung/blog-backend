@@ -72,10 +72,12 @@ func (a *app) CreateBlog(c *gin.Context) {
 }
 
 func (a *app) DeleteBlog(c *gin.Context) {
-	id := c.Param("id")
-
+	oID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Printf("DeleteBlog: err while getting url paramter %v\n", err)
+	}
 	// delete in db
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{"_id", oID}}
 	result, err := a.Blogs.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		log.Printf("err while deleting: %v\n", err)
