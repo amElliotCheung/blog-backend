@@ -12,7 +12,6 @@ import (
 )
 
 func (a *app) GetAllBlogs(c *gin.Context) {
-	var blog model.Blog
 	var blogs []model.Blog
 
 	cursor, err := a.Blogs.Find(context.TODO(), bson.D{})
@@ -21,14 +20,9 @@ func (a *app) GetAllBlogs(c *gin.Context) {
 		return
 	}
 
-	for cursor.Next(context.TODO()) {
-		if err = cursor.Decode(&blog); err != nil {
-			log.Println("decoding blog error")
-			return
-		}
-		blogs = append(blogs, blog)
+	if err = cursor.All(context.TODO(), &blogs); err != nil {
+		log.Printf("error while getting all blogs: %v\n", err)
 	}
-
 	log.Println("get all blogs")
 
 	c.JSON(http.StatusOK, blogs)
@@ -75,4 +69,19 @@ func (a *app) CreateBlog(c *gin.Context) {
 	log.Printf("createBlog: %d newly created\n", result.InsertedID)
 
 	c.JSON(http.StatusOK, blog)
+}
+
+func (a *app) DeleteBlog(c *gin.Context) {
+	id := c.Param("id")
+
+	// delete in db
+	filter := bson.D{{"_id", id}}
+	result, err := a.Blogs.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Printf("err while deleting: %v\n", err)
+	}
+
+	log.Printf("DeleteBlog: %d deleted\n", result.DeletedCount)
+
+	c.JSON(http.StatusOK, gin.H{"message": "delete successfully"})
 }
