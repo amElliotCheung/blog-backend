@@ -5,7 +5,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -66,7 +65,7 @@ func (a *app) CreateBlog(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	blog.ReleaseDate = time.Now()
+	blog.Id = primitive.NewObjectID()
 	result, err := a.Blogs.InsertOne(context.TODO(), blog)
 
 	if err != nil {
