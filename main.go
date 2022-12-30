@@ -45,5 +45,6 @@ func (a *app) run() {
 	router.GET("/blogs/:id", a.GetBlog)
 	router.DELETE("/blogs/:id", a.DeleteBlog)
 	router.POST("blogs/createBlog", a.CreateBlog)
+	router.POST("comments/:blogID", a.CreateComment)
 	router.Run(":8080")
 }

@@ -71,6 +71,32 @@ func (a *app) CreateBlog(c *gin.Context) {
 	c.JSON(http.StatusOK, blog)
 }
 
+func (a *app) CreateComment(c *gin.Context) {
+	// get blogID and comment
+	blogID, err := primitive.ObjectIDFromHex(c.Param("blogID"))
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	var comment model.Comment
+	if err := c.ShouldBindJSON(&comment); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// insert into comments array of corresponding blog
+	filter := bson.D{{"_id", blogID}}
+	update := bson.D{{"$push", bson.D{{"comments", comment}}}}
+	result, err := a.Blogs.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("createComment: %d modified\n", result.ModifiedCount)
+
+	c.JSON(http.StatusOK, comment)
+}
+
 func (a *app) DeleteBlog(c *gin.Context) {
 	oID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
